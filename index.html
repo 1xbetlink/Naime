@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Aviator Multiplier Analyzer</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
+    input, textarea, button { width: 100%; margin-top: 10px; padding: 10px; font-size: 1rem; }
+    #output { margin-top: 20px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .range { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h2>🎯 Aviator Multiplier Analyzer</h2>
+  <p>Comma দিয়ে তোমার multiplier গুলো ইনপুট দাও (যেমন: 1.5, 2.1, 1.01, 5.0, 10.2)</p>
+  <textarea id="input" rows="5" placeholder="1.02, 1.10, 1.35, 2.5, 10.0"></textarea>
+  <button onclick="analyze()">বিশ্লেষণ করো</button>
+
+  <div id="output"></div>
+
+  <script>
+    function analyze() {
+      const input = document.getElementById('input').value;
+      const multipliers = input.split(',').map(x => parseFloat(x.trim())).filter(x => !isNaN(x));
+      if (multipliers.length === 0) {
+        document.getElementById('output').innerHTML = "<p>দয়া করে বৈধ কিছু সংখ্যার ইনপুট দিন।</p>";
+        return;
+      }
+
+      const avg = (multipliers.reduce((a, b) => a + b, 0) / multipliers.length).toFixed(2);
+      const sorted = multipliers.slice().sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      const median = (sorted.length % 2 !== 0) ? sorted[mid] : ((sorted[mid - 1] + sorted[mid]) / 2).toFixed(2);
+
+      const rangeCount = {
+        \"1.01x–1.50x\": multipliers.filter(x => x >= 1.01 && x < 1.5).length,
+        \"1.50x–3.00x\": multipliers.filter(x => x >= 1.5 && x < 3).length,
+        \"3.00x–10.00x\": multipliers.filter(x => x >= 3 && x < 10).length,
+        \"10.00x+\": multipliers.filter(x => x >= 10).length
+      };
+
+      let html = `<h3>📊 ফলাফল</h3>
+      <p><strong>গড়:</strong> ${avg}x</p>
+      <p><strong>মধ্যমা:</strong> ${median}x</p>`;
+
+      html += \"<div class='range'><strong>রেঞ্জ অনুযায়ী শতাংশ:</strong><ul>\";
+      for (const [range, count] of Object.entries(rangeCount)) {
+        const percent = ((count / multipliers.length) * 100).toFixed(2);
+        html += `<li>${range}: ${percent}% (${count} বার)</li>`;
+      }
+      html += \"</ul></div>\";
+
+      document.getElementById('output').innerHTML = html;
+    }
+  </script>
+</body>
+</html>
